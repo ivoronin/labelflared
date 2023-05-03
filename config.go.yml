@@ -1,0 +1,15 @@
+tunnel: "{{.TunnelUUID}}"
+credentials-file: "{{.CredsPath}}"
+
+ingress:
+{{- range .IngressRules}}
+# {{ .Name }}
+  - service: {{.Service}}
+{{- if .Hostname}}
+    hostname: {{.Hostname}}
+{{- end}}
+{{- if .Path}}
+    path: {{.Path}}
+{{- end}}
+{{- end}}
+  - service: http_status:404
