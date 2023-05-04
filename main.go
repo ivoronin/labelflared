@@ -22,13 +22,6 @@ type Options struct {
 func refresh(cli *dockerClient.Client, options Options) {
 	log.Printf("refreshing cloudflared configuration")
 
-	cfdContainerLabel := options.labelPrefix + ".cloudflared"
-	cfdContainer, err := getContainerWithLabel(cli, cfdContainerLabel)
-	if err != nil {
-		log.Printf("unable to find cloudflared container: %v", err)
-		return
-	}
-
 	cfdConfig, err := renderConfig(cli, options)
 	if err != nil {
 		log.Printf("unable to generate cloudflared config: %v", err)
@@ -42,10 +35,19 @@ func refresh(cli *dockerClient.Client, options Options) {
 	}
 
 	if hasChanged {
-		log.Printf("configuration change detected, restarting container %s", cfdContainer.Names[0])
+		log.Printf("configuration change detected")
+		cfdContainerLabel := options.labelPrefix + ".cloudflared"
+		cfdContainer, err := getContainerWithLabel(cli, cfdContainerLabel)
+		if err != nil {
+			log.Printf("unable to find cloudflared container: %v", err)
+			return
+		}
+		cfdContainerName := cfdContainer.Names[0]
+
+		log.Printf("restarting cloudflared container %s", cfdContainerName)
 		err = restartContainer(cli, cfdContainer)
 		if err != nil {
-			log.Printf("unable to restart cloudflared container: %v", err)
+			log.Printf("unable to restart cloudflared container %s: %v", cfdContainerName, err)
 		}
 	} else {
 		log.Printf("no configuration change detected")
