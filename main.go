@@ -21,6 +21,22 @@ type Options struct {
 	labelPrefix string
 }
 
+func restartCloudflared(cli *dockerClient.Client, labelPrefix string) {
+	containerLabel := labelPrefix + ".cloudflared"
+	container, err := getContainerWithLabel(cli, containerLabel)
+	if err != nil {
+		log.Printf("unable to find cloudflared container: %v", err)
+		return
+	}
+	containerName := container.Names[0]
+
+	log.Printf("restarting cloudflared container %s", containerName)
+	err = restartContainer(cli, container)
+	if err != nil {
+		log.Printf("unable to restart cloudflared container %s: %v", containerName, err)
+	}
+}
+
 func refresh(cli *dockerClient.Client, options Options) {
 	log.Printf("refreshing cloudflared configuration")
 
@@ -38,19 +54,7 @@ func refresh(cli *dockerClient.Client, options Options) {
 
 	if hasChanged {
 		log.Printf("configuration change detected")
-		cfdContainerLabel := options.labelPrefix + ".cloudflared"
-		cfdContainer, err := getContainerWithLabel(cli, cfdContainerLabel)
-		if err != nil {
-			log.Printf("unable to find cloudflared container: %v", err)
-			return
-		}
-		cfdContainerName := cfdContainer.Names[0]
-
-		log.Printf("restarting cloudflared container %s", cfdContainerName)
-		err = restartContainer(cli, cfdContainer)
-		if err != nil {
-			log.Printf("unable to restart cloudflared container %s: %v", cfdContainerName, err)
-		}
+		restartCloudflared(cli, options.labelPrefix)
 	} else {
 		log.Printf("no configuration change detected")
 	}
