@@ -12,6 +12,10 @@ import (
 	dockerClient "github.com/docker/docker/client"
 )
 
+func getContainerName(container dockerTypes.Container) string {
+	return strings.TrimPrefix(container.Names[0], "/")
+}
+
 func restartContainer(cli *dockerClient.Client, container dockerTypes.Container) error {
 	return cli.ContainerRestart(context.Background(), container.ID, containerTypes.StopOptions{})
 }

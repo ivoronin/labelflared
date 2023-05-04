@@ -28,7 +28,7 @@ func restartCloudflared(cli *dockerClient.Client, labelPrefix string) {
 		log.Printf("unable to find cloudflared container: %v", err)
 		return
 	}
-	containerName := container.Names[0]
+	containerName := getContainerName(container)
 
 	log.Printf("restarting cloudflared container %s", containerName)
 	err = restartContainer(cli, container)

@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"os"
 	"sort"
-	"strings"
 	"text/template"
 
 	"github.com/docker/docker/api/types"
@@ -72,7 +71,7 @@ func renderConfig(cli *client.Client, options Options) ([]byte, error) {
 		/* Populate fields */
 		for name, rule := range containerRules {
 			rule.Name = name
-			serviceHostname := strings.TrimPrefix(container.Names[0], "/")
+			serviceHostname := getContainerName(container)
 			serviceURL := url.URL{
 				Scheme: rule.Protocol,
 				Host:   fmt.Sprintf("%s:%d", serviceHostname, rule.Port),
