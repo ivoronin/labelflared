@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
-	"log"
 	"os"
 )
 
@@ -38,6 +37,5 @@ func writeCredentialsFile(path string, token Token) error {
 	if err != nil {
 		return nil
 	}
-	log.Printf("credentials file contents: %v", contents)
 	return os.WriteFile(path, contents, 0644)
 }
