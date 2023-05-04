@@ -37,8 +37,8 @@ func restartCloudflared(cli *dockerClient.Client, labelPrefix string) {
 	}
 }
 
-func refresh(cli *dockerClient.Client, options Options) {
-	log.Printf("refreshing cloudflared configuration")
+func checkLabels(cli *dockerClient.Client, options Options) {
+	log.Printf("checking container labels")
 
 	config, err := renderConfig(cli, options)
 	if err != nil {
@@ -91,7 +91,7 @@ func main() {
 
 	log.Print("labelflared started")
 
-	refresh(cli, options)
+	checkLabels(cli, options)
 
 	messages, errors := cli.Events(context.Background(), dockerTypes.EventsOptions{})
 	for {
@@ -101,7 +101,7 @@ func main() {
 		case msg := <-messages:
 			if msg.Type == eventTypes.ContainerEventType &&
 				(msg.Action == "create" || msg.Action == "destroy") {
-				refresh(cli, options)
+				checkLabels(cli, options)
 			}
 		}
 	}
