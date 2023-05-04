@@ -40,13 +40,13 @@ func restartCloudflared(cli *dockerClient.Client, labelPrefix string) {
 func refresh(cli *dockerClient.Client, options Options) {
 	log.Printf("refreshing cloudflared configuration")
 
-	cfdConfig, err := renderConfig(cli, options)
+	config, err := renderConfig(cli, options)
 	if err != nil {
 		log.Printf("unable to generate cloudflared config: %v", err)
 		return
 	}
 
-	hasChanged, err := writeConfigIfChanged(options.configPath, cfdConfig)
+	hasChanged, err := writeConfigIfChanged(options.configPath, config)
 	if err != nil {
 		log.Printf("unable to write cloudflared config: %v", err)
 		return
