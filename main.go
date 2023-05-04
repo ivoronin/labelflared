@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"log"
+	"path/filepath"
 
 	dockerTypes "github.com/docker/docker/api/types"
 	eventTypes "github.com/docker/docker/api/types/events"
@@ -11,6 +12,7 @@ import (
 )
 
 const DefaultLabelPrefix = "labelflared"
+const DefaultConfigDir = "/etc/cloudflared"
 
 type Options struct {
 	configPath  string
@@ -57,10 +59,25 @@ func refresh(cli *dockerClient.Client, options Options) {
 func main() {
 	var options Options
 
-	options.configPath = requireEnv("CONFIG_PATH")
-	options.tunnelUUID = requireEnv("TUNNEL_UUID")
-	options.credsPath = requireEnv("CREDENTIALS_FILE")
+	configDir := defaultEnv("CLOUDFLARED_CONFIG_DIR", DefaultConfigDir)
+	options.configPath = filepath.Join(configDir, "config.yml")
+	options.credsPath = filepath.Join(configDir, "credentials.json")
+
 	options.labelPrefix = defaultEnv("LABEL_PREFIX", DefaultLabelPrefix)
+
+	b64EncodedToken := requireEnv("CLOUDFLARED_TOKEN")
+
+	token, err := parseB64EncodedToken(b64EncodedToken)
+	if err != nil {
+		log.Fatalf("token parse error: %s", err)
+	}
+
+	options.tunnelUUID = token.TunnelID
+
+	err = writeCredentialsFile(options.credsPath, token)
+	if err != nil {
+		log.Fatalf("unable to write credentials file: %s", err)
+	}
 
 	cli, err := dockerClient.NewClientWithOpts(dockerClient.FromEnv)
 	if err != nil {

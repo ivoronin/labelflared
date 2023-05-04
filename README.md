@@ -14,21 +14,25 @@ services:
         container_name: cloudflared
         image: cloudflare/cloudflared:2023.4.2
         volumes:
-            - "/data/cloudflared/config:/etc/cloudflared"
+            - "cloudflared_config:/etc/cloudflared"
         command: tunnel --no-autoupdate run
         labels:
             - "labelflared.cloudflared"
+        depends_on:
+            labelflared:
+                condition: service_healthy
         restart: on-failure
     labelflared:
         container_name: labelflared
         image: labelflared
         volumes:
-            - "/data/cloudflared/config:/etc/cloudflared"
+            - "cloudflared_config:/etc/cloudflared"
             - "/var/run/docker.sock:/var/run/docker.sock"
+        healthcheck:
+            test: ["CMD", "test", "-s", "/etc/cloudflared/config.yml"]
+            interval: '5s'
         environment:
-            CONFIG_PATH: "/etc/cloudflared/config.yml"
-            TUNNEL_UUID: "c499d92b-4a4d-4b58-9925-65656e1148b5"
-            CREDENTIALS_FILE: "/etc/cloudflared/credentials.json"
+            CLOUDFLARED_TOKEN: "<b64 encoded cloudflared token>"
         restart: on-failure
     vaultwarden:
         container_name: vaultwarden
@@ -52,14 +56,17 @@ services:
             - "labelflared.ingress.vaultwarden-websocket.priority=1000"
             - "labelflared.ingress.vaultwarden-web.hostname=bitwarden.example.com"
             - "labelflared.ingress.vaultwarden-web.port=80"
+
+volumes:
+    cloudflared_config:
+        name: "cloudflared_config"
 ```
 
 Environment Variables
 =====================
 
-- `CONFIG_PATH` - Path to cloudflared config file. Required.
-- `TUNNEL_UUID` - Cloudflare tunnel UUID. Required.
-- `CREDENTIALS_FILE` - Path to cloudflared credentials file. Required.
+- `CLOUDFLARED_TOKEN` - Base64 encoded cloudflared token. Required.
+- `CLOUDFLARED_CONFIG_DIR` - Path to cloudflared config directory. Defaults to `/etc/cloudflared`.
 - `LABEL_PREFIX` - Initial segment of a label that you can alter to form distinct sets of containers and their corresponding cloudflared instances. Defaults to `labelflared`.
 
 Label Syntax
