@@ -6,6 +6,7 @@ import (
 	"log"
 
 	dockerTypes "github.com/docker/docker/api/types"
+	eventTypes "github.com/docker/docker/api/types/events"
 	dockerClient "github.com/docker/docker/client"
 )
 
@@ -74,8 +75,11 @@ func main() {
 		select {
 		case err := <-errors:
 			log.Fatalf("error receiving event: %s", err)
-		case <-messages:
-			refresh(cli, options)
+		case msg := <-messages:
+			if msg.Type == eventTypes.ContainerEventType &&
+				(msg.Action == "create" || msg.Action == "destroy") {
+				refresh(cli, options)
+			}
 		}
 	}
 }
