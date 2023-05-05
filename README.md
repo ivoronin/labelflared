@@ -3,6 +3,7 @@ labelflared
 
 This tool assists in operating cloudflared within a standalone docker or docker-compose environment.
 It enables the definition of cloudflared ingress rules using container labels.
+It works by keeping an eye on the containers for changes, using a token and the container's label values to create a configuration file for cloudflared, and then restarting the cloudflared container to apply the new configuration.
 
 Example docker-compose.yml
 ==========================
