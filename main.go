@@ -27,7 +27,7 @@ func restartCloudflared(cli *dockerClient.Client, labelPrefix string) {
 	containerLabel := labelPrefix + ".cloudflared"
 	container, err := getContainerWithLabel(cli, containerLabel)
 	if err != nil {
-		log.Printf("unable to find cloudflared container: %v", err)
+		log.Printf("unable to find cloudflared container: %s", err)
 		return
 	}
 	containerName := getContainerName(container)
@@ -35,7 +35,7 @@ func restartCloudflared(cli *dockerClient.Client, labelPrefix string) {
 	log.Printf("restarting cloudflared container %s", containerName)
 	err = restartContainer(cli, container)
 	if err != nil {
-		log.Printf("unable to restart cloudflared container %s: %v", containerName, err)
+		log.Printf("unable to restart cloudflared container %s: %s", containerName, err)
 	}
 }
 
@@ -44,13 +44,13 @@ func checkLabels(cli *dockerClient.Client, options Options) {
 
 	config, err := renderConfig(cli, options)
 	if err != nil {
-		log.Printf("unable to generate cloudflared config: %v", err)
+		log.Printf("unable to generate cloudflared config: %s", err)
 		return
 	}
 
 	hasChanged, err := writeConfigIfChanged(options.configPath, config)
 	if err != nil {
-		log.Printf("unable to write cloudflared config: %v", err)
+		log.Printf("unable to write cloudflared config: %s", err)
 		return
 	}
 
