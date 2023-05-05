@@ -68,6 +68,7 @@ Environment Variables
 - `CLOUDFLARED_TOKEN` - Base64 encoded cloudflared token. Required.
 - `CLOUDFLARED_CONFIG_DIR` - Path to cloudflared config directory. Defaults to `/etc/cloudflared`.
 - `LABEL_PREFIX` - Initial segment of a label that you can alter to form distinct sets of containers and their corresponding cloudflared instances. Defaults to `labelflared`.
+- `SETTLEDOWN_TIMEOUT` - time in seconds to wait for things to stop changing before updating cloudflared configuration. Defaults to 5.
 
 Label Syntax
 ============

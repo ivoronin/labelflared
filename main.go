@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"log"
 	"path/filepath"
+	"time"
 
 	dockerTypes "github.com/docker/docker/api/types"
 	eventTypes "github.com/docker/docker/api/types/events"
@@ -13,6 +14,7 @@ import (
 
 const DefaultLabelPrefix = "labelflared"
 const DefaultConfigDir = "/etc/cloudflared"
+const DefaultSettleDownTimeout = "5"
 
 type Options struct {
 	configPath  string
@@ -67,6 +69,13 @@ func main() {
 	options.configPath = filepath.Join(configDir, "config.yml")
 	options.credsPath = filepath.Join(configDir, "credentials.json")
 
+	settleDownTimeout, err := time.ParseDuration(
+		defaultEnv("SETTLEDOWN_TIMEOUT", DefaultSettleDownTimeout) + "s",
+	)
+	if err != nil {
+		log.Fatalf("settle down timeout parse error: %s", err)
+	}
+
 	options.labelPrefix = defaultEnv("LABEL_PREFIX", DefaultLabelPrefix)
 
 	b64EncodedToken := requireEnv("CLOUDFLARED_TOKEN")
@@ -91,8 +100,8 @@ func main() {
 
 	log.Print("labelflared started")
 
-	checkLabels(cli, options)
-
+	/* Fire timer immediately */
+	timer := time.NewTimer(0)
 	messages, errors := cli.Events(context.Background(), dockerTypes.EventsOptions{})
 	for {
 		select {
@@ -101,8 +110,11 @@ func main() {
 		case msg := <-messages:
 			if msg.Type == eventTypes.ContainerEventType &&
 				(msg.Action == "create" || msg.Action == "destroy") {
-				checkLabels(cli, options)
+				/* Wait for events to settle down */
+				timer.Reset(settleDownTimeout)
 			}
+		case <-timer.C:
+			checkLabels(cli, options)
 		}
 	}
 }
