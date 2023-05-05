@@ -2,10 +2,7 @@ module github.com/ivoronin/labelflared
 
 go 1.19
 
-require (
-	github.com/docker/docker v23.0.4+incompatible
-	golang.org/x/exp v0.0.0-20230425010034-47ecfdc1ba53
-)
+require github.com/docker/docker v23.0.4+incompatible
 
 require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
@@ -13,6 +10,7 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/moby/term v0.0.0-20221205130635-1aeaba878587 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
