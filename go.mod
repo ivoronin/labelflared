@@ -1,4 +1,4 @@
-module github.com/ivoronin/autoflared
+module github.com/ivoronin/labelflared
 
 go 1.19
 
